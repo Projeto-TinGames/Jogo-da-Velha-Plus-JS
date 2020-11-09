@@ -1,8 +1,8 @@
-Jogador = require("./jogador.js");
-Tabuleiro = require("./tabuleiro.js");
-poderes = require("./poderes.js");
-
 PackInicial = (socketList,maximoJogadores) => {
+    var Jogador = require("./jogador.js");
+    var Tabuleiro = require("./tabuleiro.js");
+    var poderes = require("./poderes.js");
+    
     var pack = {
         Jogador:require("./jogador.js"),
         tabuleiro: new Tabuleiro(maximoJogadores),

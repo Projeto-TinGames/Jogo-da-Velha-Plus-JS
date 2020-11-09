@@ -1,6 +1,5 @@
 
 var manager = require("../app.js");
-const Jogador = require("./jogador.js");
 
 function Poder() {
     this.img = "../client/img/X.png";
@@ -16,21 +15,20 @@ function Poder() {
 }
 
 function Repeticao() {
-    var self = new Poder();
+    Poder.call(this);
 
-    super_executa = self.Executa;
-    self.Executa = (casa) => {
+    super_executa = this.Executa;
+    this.Executa = (casa) => {
         super_executa(casa);
         manager.cancelarPassarTurno++;
     }
-    return self;
 }
 
 function Troca() {
-    var self = new Poder();
+    Poder.call(this);
 
-    super_executa = self.Executa;
-    self.Executa = (casa) => {
+    super_executa = this.Executa;
+    this.Executa = (casa) => {
         super_executa(casa);
         jogadores = [];
         jogadoresMudar = [];
@@ -41,6 +39,8 @@ function Troca() {
             jogadoresMudar.push(manager.Jogador.list[i]);
             jogadoresMudarPara.push(manager.Jogador.list[i]);
         }
+
+        manager.cancelarPassarTurno = jogadores.length - 1;
 
         for (var i = 0; i < jogadoresMudar.length; i++) {
             while (jogadoresMudar[i] == jogadoresMudarPara[i]) {
@@ -57,7 +57,6 @@ function Troca() {
                     indexMudar = jogadoresMudar.indexOf(manager.tabuleiro.casas[l][c].valor);
 
                     manager.AtualizaJogoDaVelha(manager.tabuleiro.casas[l][c],jogadoresMudarPara[indexMudar]);
-                    manager.turno--;
                 }
             }
         }
@@ -67,10 +66,8 @@ function Troca() {
         for (var i in manager.Jogador.list) {
             manager.TesteVitoria(manager.Jogador.list[i]);
         }
-
     }
-    return self;
 }
 
-poderes = [Troca()];
+poderes = [new Repeticao()];
 module.exports = poderes;

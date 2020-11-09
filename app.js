@@ -283,7 +283,6 @@ function LinhaVitoria(casasVitoria) {
 setInterval(() => {
     if (packGlobal != undefined) {
         var pack = {
-            jogadores:packGlobal.Jogador.Update(),
             tabuleiro:packGlobal.tabuleiro
         };
         for (var i in SOCKET_LIST) {
