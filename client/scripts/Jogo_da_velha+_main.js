@@ -114,7 +114,7 @@ DesenhaEmptyRect = (x,y,width,height) => {
 
 IniciarJogo = (maximoJogadores) => {
     maximoJogadores = parseInt(maximoJogadores);
-    if (maximoJogadores < 1) {
+    if (maximoJogadores < 1 || isNaN(maximoJogadores)) {
         maximoJogadores = 1;
     }
     if (maximoJogadores > 4) {
