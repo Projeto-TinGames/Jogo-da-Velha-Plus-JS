@@ -8,6 +8,13 @@
         <div style="text-align:center">
             <canvas id="cnv" width="800" height="600" style="border:1px solid #000000;"></canvas>
         </div>
+        <form style="text-align:center">
+            Digite o número de jogadores: <input type="number" id ="maximoJogadores" min="1" max="4"></input>
+            <button type="button" onclick="IniciarJogo(maximoJogadores.value)">Iniciar</button>
+        </form>
+        <div style="text-align:center">
+            <button type="button" id="preparar/despreparar" onclick="Preparar()">Preparar</button>
+        </div>
         <script src = "https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.0/socket.io.js"></script>
         <script src = "/client/scripts/Jogo_da_velha+_main.js"></script>
     </body>

@@ -1,20 +1,33 @@
-var valorIndex = 0;
-var valores = ["X","O","Δ","[]"];
-
-function Jogador(id,index) {
+function Jogador(id,index,casasValidas,poderes) {
     this.id = id;
     this.index = index;
-    this.valor = valores[valorIndex];
+    var valores = ["X","O","Δ","[]"];
+    this.valor = valores[index];
+    this.poderes = [];
+    this.casasInvalidas = [];
+    this.casasValidas = casasValidas;
+
+    for (i = 0; i < 3; i++) {
+        this.poderes.push(poderes[Math.floor(Math.random() * poderes.length)]);
+    }
+
+    this.PosicionaPoder = (casa) => {
+        this.poderes.shift();
+        this.casasInvalidas.push(casa);
+        this.casasValidas--;
+    }
+
+    this.ReduzirCasa = (casa) => {
+        
+    }
 
     Jogador.list[this.id] = this;
 }
 
-Jogador.onConnect = (socket) => {
-    if (valorIndex < 4) {
-        jogador = new Jogador(socket.id,valorIndex);
-        Jogador.list[socket.id] = jogador;
-        valorIndex++;
-    }
+Jogador.onConnect = (socket, valorIndex, maximoJogadores, poderes) => {
+    casasValidas = (4 + maximoJogadores - 2)*(4 + maximoJogadores - 2)
+    jogador = new Jogador(socket.id,valorIndex,casasValidas, poderes);
+    Jogador.list[socket.id] = jogador;
 }
 
 Jogador.Update = () => {
@@ -34,5 +47,18 @@ Jogador.onDisconnect = (socket) => {
 }
 
 Jogador.list = {}
+
+Jogador.CriarLista = (socketList, maximoJogadores, poderes) => {
+    var valorIndex = 0;
+    for (i in socketList) {
+        if (valorIndex < maximoJogadores) {
+            Jogador.onConnect(socketList[i],valorIndex,maximoJogadores, poderes);
+            valorIndex++;
+        }
+        else {
+            break;
+        }
+    }
+}
 
 module.exports = Jogador;

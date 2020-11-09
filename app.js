@@ -14,53 +14,122 @@ console.log("Server Started");
 
 var Globais = require("./server/globais.js");
 
-var Jogador = Globais.Jogador;
-var tabuleiro = Globais.tabuleiro;
-var turno = Globais.turno;
-var etapa = Globais.etapa;
-var maximoJogadores = Globais.maximoJogadores;
-var casasVitoria = Globais.casasVitoria;
+var packGlobal = undefined;
+var inGame = false;
 
 var SOCKET_LIST = {};
 
 var io = require('socket.io')(server,{});
 io.sockets.on('connection',(socket) => {
     socket.id = Math.random();
+    socket.ready = false;
     SOCKET_LIST[socket.id] = socket;
     console.log(socket.id + " Connected");
-
-    Jogador.onConnect(socket);
     
     socket.on("MouseDown", (data) => {
-        jogador = Jogador.list[socket.id];
-        casaSelecionada = tabuleiro.TestaColisoes(data.x,data.y);
-        if (casaSelecionada != undefined && jogador.index == turno) {
-            AtualizaJogo(casaSelecionada,jogador.valor);
+        if (inGame && packGlobal.Jogador.list[socket.id] != undefined) {
+            jogador = packGlobal.Jogador.list[socket.id];
+            casaSelecionada = packGlobal.tabuleiro.TestaColisoes(data.x,data.y);
+            if (casaSelecionada != undefined && jogador.index == packGlobal.turno) {
+                AtualizaJogo(casaSelecionada,jogador,socket);
+            }
         }
+    })
+
+    socket.on("IniciarJogo", (data) => {
+        if (!inGame) {
+            var socketsPreparados = [];
+            for (i in SOCKET_LIST) {
+                if (SOCKET_LIST[i].ready) {
+                    socketsPreparados.push(SOCKET_LIST[i]);
+                }
+                SOCKET_LIST[i].emit("ResetaPoderes");
+            }
+            if (socketsPreparados.length >= data) {
+                packGlobal = Globais(socketsPreparados,data);
+                packGlobal.AtualizaJogoDaVelha = AtualizaJogoDaVelha;
+                packGlobal.TesteVitoria = TesteVitoria;
+                inGame = true;
+            }
+            else {
+                socket.emit("Erro", "Quantidade insuficiente de jogadores online");
+            }
+        }
+        else {
+            socket.emit("Erro", "Uma partida já está em andamento");
+        }
+    })
+
+    socket.on("Ready", () => {
+        socket.ready = !socket.ready;
     })
 
     socket.on("disconnect", () => {
         delete SOCKET_LIST[socket.id];
-        Jogador.onDisconnect(socket);
+        if (packGlobal != undefined) {
+            packGlobal.Jogador.onDisconnect(socket);
+        }
     })
 })
 
-function AtualizaJogo(casa,valor) {
-    AtualizaJogoDaVelha(casa,valor);
-    turno++;
-    if (turno == 4) {
-        turno = 0;
+function AtualizaJogo(casa,jogador,socket) {
+    module.exports = packGlobal;
+
+    if (packGlobal.etapa == "Posicionar Poderes") {
+        AtualizaPosicionaPoder(casa,jogador,socket);
     }
-    module.exports = etapa;
+    else {
+        AtualizaJogoDaVelha(casa,jogador);
+    }
 }
 
-function AtualizaPosicionaPoder() {
+function AtualizaPosicionaPoder(casa,jogador,socket) {
+    socket.emit("PosicionaPoder", {casa:casa,poder:jogador.poderes[0]})
+    casa.ColocaPoder(jogador.poderes[0]);
+    jogador.PosicionaPoder(casa);
     
+    if (jogador.poderes.length == 0) {
+        packGlobal.turno++;
+        if (packGlobal.turno == packGlobal.maximoJogadores) {
+            packGlobal.turno = 0;
+            packGlobal.etapa = "Jogo da Velha";
+        }
+    }
 }
 
-function AtualizaJogoDaVelha(casa,valor) {
-    casa.valor = valor;
-    TesteVitoria(casa.valor);
+function AtualizaJogoDaVelha(casa,jogador) {
+    if (!jogador.casasInvalidas.includes(casa)) {
+        valor = jogador;
+        for (i in packGlobal.Jogador.list) {
+            packGlobal.Jogador.list[i].ReduzirCasa();
+        }
+
+        casa.valor = valor;
+        casa.ExecutaPoderes();
+        if (!packGlobal.cancelarTesteVitoria) {
+            TesteVitoria(casa.valor)
+        }
+
+        if (packGlobal.cancelarPassarTurno == 0) {
+            packGlobal.turno++;
+            if (packGlobal.turno == packGlobal.maximoJogadores) {
+                packGlobal.turno = 0;
+            }
+        }
+        else {
+            packGlobal.cancelarPassarTurno--;
+        }
+
+        //Empate
+        for (i in packGlobal.Jogador.list) {
+            if (packGlobal.Jogador.list[i].index == packGlobal.turno) {
+                if (packGlobal.Jogador.list[i].casasValidas == 0) {
+                    inGame = false;
+                }
+                break;
+            }
+        }
+    }
 }
 
 function TesteVitoria(valor) {
@@ -68,13 +137,13 @@ function TesteVitoria(valor) {
 }
 
 function TesteHorizontal(valor) {
-    for (l = 0; l < tabuleiro.linhas; l++) {
+    for (l = 0; l < packGlobal.tabuleiro.linhas; l++) {
         contador = 0;
         casasVitoria = [];
-        for (c = 0; c < tabuleiro.colunas; c++) {
-            if (tabuleiro.casas[l][c].valor == valor) {
+        for (c = 0; c < packGlobal.tabuleiro.colunas; c++) {
+            if (packGlobal.tabuleiro.casas[l][c].valor == valor) {
                 contador += 1;
-                casasVitoria.push(tabuleiro.casas[l][c]);
+                casasVitoria.push(packGlobal.tabuleiro.casas[l][c]);
             }
             else {
                 contador = 0;
@@ -89,13 +158,13 @@ function TesteHorizontal(valor) {
 }
 
 function TesteVertical(valor) {
-    for (c = 0; c < tabuleiro.linhas; c++) {
+    for (c = 0; c < packGlobal.tabuleiro.linhas; c++) {
         contador = 0;
         casasVitoria = [];
-        for (l = 0; l < tabuleiro.linhas; l++) {
-            if (tabuleiro.casas[l][c].valor == valor) {
+        for (l = 0; l < packGlobal.tabuleiro.linhas; l++) {
+            if (packGlobal.tabuleiro.casas[l][c].valor == valor) {
                 contador += 1;
-                casasVitoria.push(tabuleiro.casas[l][c]);
+                casasVitoria.push(packGlobal.tabuleiro.casas[l][c]);
             }
             else {
                 contador = 0;
@@ -110,14 +179,14 @@ function TesteVertical(valor) {
 }
 
 function TesteDiagonalHorizontal(valor) {
-    for (c = 0; c < tabuleiro.colunas - 2; c++) {
+    for (c = 0; c < packGlobal.tabuleiro.colunas - 2; c++) {
         contador = 0
         casasVitoria = []
-        for (l = 0; l < tabuleiro.linhas; l++) {
-            if (l+c < tabuleiro.colunas) {
-                if (tabuleiro.casas[l][l+c].valor == valor) {
+        for (l = 0; l < packGlobal.tabuleiro.linhas; l++) {
+            if (l+c < packGlobal.tabuleiro.colunas) {
+                if (packGlobal.tabuleiro.casas[l][l+c].valor == valor) {
                     contador += 1;
-                    casasVitoria.push(tabuleiro.casas[l][l+c]);
+                    casasVitoria.push(packGlobal.tabuleiro.casas[l][l+c]);
                 }
                 else {
                     contador = 0;
@@ -131,14 +200,14 @@ function TesteDiagonalHorizontal(valor) {
         }
     }
                 
-    for (c = 0; c < tabuleiro.colunas - 2; c++) {
+    for (c = 0; c < packGlobal.tabuleiro.colunas - 2; c++) {
         contador = 0;
         casasVitoria = [];
-        for (l = 0; l < tabuleiro.linhas; l++) {
-            if (l+c < tabuleiro.colunas) {
-                if (tabuleiro.casas[l][tabuleiro.colunas-1-l-c].valor == valor) {
+        for (l = 0; l < packGlobal.tabuleiro.linhas; l++) {
+            if (l+c < packGlobal.tabuleiro.colunas) {
+                if (packGlobal.tabuleiro.casas[l][packGlobal.tabuleiro.colunas-1-l-c].valor == valor) {
                     contador += 1;
-                    casasVitoria.push(tabuleiro.casas[l][tabuleiro.colunas-1-l-c]);
+                    casasVitoria.push(packGlobal.tabuleiro.casas[l][packGlobal.tabuleiro.colunas-1-l-c]);
                 }
                 else {
                     contador = 0;
@@ -154,14 +223,14 @@ function TesteDiagonalHorizontal(valor) {
 }
 
 function TesteDiagonalVertical(valor) {
-    for (l = 0; l < tabuleiro.linhas - 2; l++) {
+    for (l = 0; l < packGlobal.tabuleiro.linhas - 2; l++) {
         contador = 0
         casasVitoria = []
-        for (c = 0; c < tabuleiro.colunas; c++) {
-            if (l+c < tabuleiro.linhas) {
-                if (tabuleiro.casas[l+c][c].valor == valor) {
+        for (c = 0; c < packGlobal.tabuleiro.colunas; c++) {
+            if (l+c < packGlobal.tabuleiro.linhas) {
+                if (packGlobal.tabuleiro.casas[l+c][c].valor == valor) {
                     contador += 1;
-                    casasVitoria.push(tabuleiro.casas[l+c][c]);
+                    casasVitoria.push(packGlobal.tabuleiro.casas[l+c][c]);
                 }
                 else {
                     contador = 0;
@@ -175,14 +244,14 @@ function TesteDiagonalVertical(valor) {
         }
     }
                 
-    for (l = 0; l < tabuleiro.linhas - 2; l++) {
+    for (l = 0; l < packGlobal.tabuleiro.linhas - 2; l++) {
         contador = 0
         casasVitoria = []
-        for (c = 0; c < tabuleiro.colunas; c++) {
-            if (l+c < tabuleiro.linhas) {
-                if (tabuleiro.casas[c+l][tabuleiro.colunas-1-c].valor == valor) {
+        for (c = 0; c < packGlobal.tabuleiro.colunas; c++) {
+            if (l+c < packGlobal.tabuleiro.linhas) {
+                if (packGlobal.tabuleiro.casas[c+l][packGlobal.tabuleiro.colunas-1-c].valor == valor) {
                     contador += 1;
-                    casasVitoria.push(tabuleiro.casas[c+l][tabuleiro.colunas-1-c]);
+                    casasVitoria.push(packGlobal.tabuleiro.casas[c+l][packGlobal.tabuleiro.colunas-1-c]);
                 }
                 else {
                     contador = 0;
@@ -206,18 +275,20 @@ function LinhaVitoria(casasVitoria) {
     ultimaCasaY = casasVitoria[2].y+casasVitoria[2].height/2;
     posicaoUltimaCasa = [ultimaCasaX,ultimaCasaY];
 
-    tabuleiro.casasVitoria = {primeiraCasa:posicaoPrimeiraCasa, ultimaCasa:posicaoUltimaCasa};
+    packGlobal.tabuleiro.casasVitoria = {primeiraCasa:posicaoPrimeiraCasa, ultimaCasa:posicaoUltimaCasa};
+
+    inGame = false;
 }
 
 setInterval(() => {
-    var pack = {
-        jogadores:Jogador.Update(),
-        tabuleiro:tabuleiro
-    };
-    for (var i in SOCKET_LIST) {
-        socket = SOCKET_LIST[i];
-        socket.emit('Update', pack);
+    if (packGlobal != undefined) {
+        var pack = {
+            jogadores:packGlobal.Jogador.Update(),
+            tabuleiro:packGlobal.tabuleiro
+        };
+        for (var i in SOCKET_LIST) {
+            socket = SOCKET_LIST[i];
+            socket.emit('Update', pack);
+        }
     }
 }, 1000/25);
-
-module.exports = etapa;

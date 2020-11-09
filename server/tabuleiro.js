@@ -10,6 +10,7 @@ function Tabuleiro(quantidadeJogadores) {
         var casas = [];
 
         for (l = 0; l < this.linhas; l++) {
+
             casas[l] = [];
             for (c = 0; c < this.colunas; c++) {
                 var width = Math.floor(this.tamanho[0]/this.colunas);
@@ -24,8 +25,6 @@ function Tabuleiro(quantidadeJogadores) {
     }
 
     this.TestaColisoes = (x,y) => {
-        var Globais = require('../app.js');
-        console.log(Globais);
         for (l = 0; l < this.linhas; l++) {
             for (c = 0; c < this.colunas; c++) {
                 if (this.casas[l][c].TestaColisao(x,y)) {
@@ -60,8 +59,16 @@ function Casa(x,y,width,height) {
         }
         return false;
     }
+
+    this.ColocaPoder = (poder) => {
+        this.poderes.push(poder);
+    }
+
+    this.ExecutaPoderes = () => {
+        while (this.poderes.length > 0) {
+            this.poderes.shift().Executa(this);
+        }
+    }
 }
 
-tabuleiro = new Tabuleiro(4);
-
-module.exports = tabuleiro;
+module.exports = Tabuleiro;
