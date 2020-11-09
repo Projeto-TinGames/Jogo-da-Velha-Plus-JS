@@ -47,7 +47,6 @@ function Casa(x,y,width,height) {
 
     this.valor = undefined;
     this.poderes = [];
-    this.jogadoresBloqueados = [];
 
     this.TestaColisao = (x,y) => {
         if (this.valor == undefined) {
@@ -59,14 +58,13 @@ function Casa(x,y,width,height) {
         }
         return false;
     }
-
     this.ColocaPoder = (poder) => {
         this.poderes.push(poder);
     }
 
-    this.ExecutaPoderes = () => {
+    this.ExecutaPoderes = (jogador) => {
         while (this.poderes.length > 0) {
-            this.poderes.shift().Executa(this);
+            this.poderes.shift().Executa(this,jogador);
         }
     }
 }

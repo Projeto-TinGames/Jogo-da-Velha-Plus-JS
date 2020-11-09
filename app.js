@@ -12,8 +12,6 @@ server.listen(2000);
 
 console.log("Server Started");
 
-var Globais = require("./server/globais.js");
-
 var packGlobal = undefined;
 var inGame = false;
 
@@ -46,6 +44,7 @@ io.sockets.on('connection',(socket) => {
                 SOCKET_LIST[i].emit("ResetaPoderes");
             }
             if (socketsPreparados.length >= data) {
+                var Globais = require("./server/globais.js");
                 packGlobal = Globais(socketsPreparados,data);
                 packGlobal.AtualizaJogoDaVelha = AtualizaJogoDaVelha;
                 packGlobal.TesteVitoria = TesteVitoria;
@@ -79,7 +78,9 @@ function AtualizaJogo(casa,jogador,socket) {
         AtualizaPosicionaPoder(casa,jogador,socket);
     }
     else {
-        AtualizaJogoDaVelha(casa,jogador);
+        if (!jogador.casasInvalidas.includes(casa)) {
+            AtualizaJogoDaVelha(casa,jogador);
+        }
     }
 }
 
@@ -98,36 +99,34 @@ function AtualizaPosicionaPoder(casa,jogador,socket) {
 }
 
 function AtualizaJogoDaVelha(casa,jogador) {
-    if (!jogador.casasInvalidas.includes(casa)) {
-        valor = jogador;
-        for (i in packGlobal.Jogador.list) {
-            packGlobal.Jogador.list[i].ReduzirCasa();
-        }
+    valor = jogador.valor;
+    for (i in packGlobal.Jogador.list) {
+        packGlobal.Jogador.list[i].ReduzirCasa(casa);
+    }
 
-        casa.valor = valor;
-        casa.ExecutaPoderes();
-        if (!packGlobal.cancelarTesteVitoria) {
-            TesteVitoria(casa.valor)
-        }
+    casa.valor = valor;
+    casa.ExecutaPoderes(jogador);
+    if (!packGlobal.cancelarTesteVitoria) {
+        TesteVitoria(casa.valor)
+    }
 
-        if (packGlobal.cancelarPassarTurno == 0) {
-            packGlobal.turno++;
-            if (packGlobal.turno == packGlobal.maximoJogadores) {
-                packGlobal.turno = 0;
+    if (packGlobal.cancelarPassarTurno == 0) {
+        packGlobal.turno++;
+        if (packGlobal.turno == packGlobal.maximoJogadores) {
+            packGlobal.turno = 0;
+        }
+    }
+    else {
+        packGlobal.cancelarPassarTurno--;
+    }
+
+    //Empate
+    for (i in packGlobal.Jogador.list) {
+        if (packGlobal.Jogador.list[i].index == packGlobal.turno) {
+            if (packGlobal.Jogador.list[i].casasValidas == 0) {
+                inGame = false;
             }
-        }
-        else {
-            packGlobal.cancelarPassarTurno--;
-        }
-
-        //Empate
-        for (i in packGlobal.Jogador.list) {
-            if (packGlobal.Jogador.list[i].index == packGlobal.turno) {
-                if (packGlobal.Jogador.list[i].casasValidas == 0) {
-                    inGame = false;
-                }
-                break;
-            }
+            break;
         }
     }
 }
@@ -282,8 +281,19 @@ function LinhaVitoria(casasVitoria) {
 
 setInterval(() => {
     if (packGlobal != undefined) {
+        for (i in packGlobal.Jogador.list) {
+            if (packGlobal.Jogador.list[i].index == packGlobal.turno) {
+                jogadorAtual = packGlobal.Jogador.list[i];
+                break;
+            }
+        }
         var pack = {
-            tabuleiro:packGlobal.tabuleiro
+            tabuleiro:packGlobal.tabuleiro,
+            UI:{
+                jogadorAtual:jogadorAtual,
+                etapa:packGlobal.etapa,
+                poderesAtivados:packGlobal.poderesAtivados
+            }
         };
         for (var i in SOCKET_LIST) {
             socket = SOCKET_LIST[i];

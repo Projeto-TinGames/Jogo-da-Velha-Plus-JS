@@ -12,6 +12,7 @@ socket.on("Update", (data) => {
     if (data.tabuleiro.casasVitoria != undefined) {
         DesenhaLinhaVitoria(data.tabuleiro.casasVitoria);
     }
+    DesenhaUI(data.UI);
 })
 
 socket.on("PosicionaPoder", (data) => {
@@ -32,7 +33,7 @@ cnv.onmousedown = (event) => {
     var rect = cnv.getBoundingClientRect();
     x = event.clientX - rect.left;
     y = event.clientY - rect.top;
-    socket.emit("MouseDown", {x,y});
+    socket.emit("MouseDown", {x:x,y:y});
 }
 
 DesenhaTabuleiro = (tabuleiro) => {
@@ -59,7 +60,7 @@ DesenhaTabuleiro = (tabuleiro) => {
             if (tabuleiro.casas[l][c].valor != undefined) {
                 ctx.clearRect(tabuleiro.casas[l][c].x + Math.floor(tabuleiro.casas[l][c].width/4), tabuleiro.casas[l][c].y + Math.floor(tabuleiro.casas[l][c].height/4), Math.floor(tabuleiro.casas[l][c].width/2), Math.floor(tabuleiro.casas[l][c].height/2));
                 var img = new Image();
-                img.src = "../client/img/" + tabuleiro.casas[l][c].valor.valor + ".png";
+                img.src = "../client/img/" + tabuleiro.casas[l][c].valor + ".png";
                 ctx.drawImage(img, tabuleiro.casas[l][c].x + Math.floor(tabuleiro.casas[l][c].width/4), tabuleiro.casas[l][c].y + Math.floor(tabuleiro.casas[l][c].height/4), Math.floor(tabuleiro.casas[l][c].width/2), Math.floor(tabuleiro.casas[l][c].height/2));
             }
         }
@@ -71,6 +72,10 @@ DesenhaLinhaVitoria = (casasVitoria) => {
     ctx.moveTo(casasVitoria.primeiraCasa[0],casasVitoria.primeiraCasa[1]);
     ctx.lineTo(casasVitoria.ultimaCasa[0],casasVitoria.ultimaCasa[1]);
     ctx.stroke();
+}
+
+DesenhaUI = (data) => {
+    console.log(data);
 }
 
 IniciarJogo = (maximoJogadores) => {

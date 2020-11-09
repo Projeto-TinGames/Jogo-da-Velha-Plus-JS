@@ -18,7 +18,9 @@ function Jogador(id,index,casasValidas,poderes) {
     }
 
     this.ReduzirCasa = (casa) => {
-        
+        if (!this.casasInvalidas.includes(casa) && casa.valor != undefined) {
+            this.casasValidas--;
+        }
     }
 
     Jogador.list[this.id] = this;
@@ -52,7 +54,7 @@ Jogador.CriarLista = (socketList, maximoJogadores, poderes) => {
     var valorIndex = 0;
     for (i in socketList) {
         if (valorIndex < maximoJogadores) {
-            Jogador.onConnect(socketList[i],valorIndex,maximoJogadores, poderes);
+            Jogador.onConnect(socketList[i],valorIndex,maximoJogadores,poderes);
             valorIndex++;
         }
         else {
