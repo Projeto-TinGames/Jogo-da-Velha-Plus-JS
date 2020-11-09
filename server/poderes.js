@@ -106,7 +106,7 @@ function Pular_Vez() {
     this.Executa = (casa) => {
         super_executa(this,casa);
         manager.turno++;
-        if (manager.turno > manager.maximoJogadores) {
+        if (manager.turno > manager.maximoJogadores-1) {
             manager.turno = 0;
         }
     }
@@ -133,7 +133,6 @@ function Inverter_Ordem() {
             soma += somaIndex;
         }
         manager.turno = manager.Jogador.list[jogador.id].index;
-        console.log(manager.turno,manager.Jogador.list);
     }
 }
 

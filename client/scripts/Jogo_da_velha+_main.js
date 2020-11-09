@@ -75,7 +75,41 @@ DesenhaLinhaVitoria = (casasVitoria) => {
 }
 
 DesenhaUI = (data) => {
-    console.log(data);
+    DesenhaTurno(data.jogadorAtual);
+    DesenhaPoderes(data.jogadorAtual,data.etapa,data.poderesAtivados);
+}
+
+DesenhaTurno = (jogadorAtual) => {
+    DesenhaEmptyRect(652,38,100,100)
+    imgJogador = new Image();
+    imgJogador.src = "../client/img/" + jogadorAtual.valor + ".png";
+    ctx.drawImage(imgJogador, 665, 50, 75, 75);
+}
+
+DesenhaPoderes = (jogadorAtual, etapa, poderesAtivados) => {
+    for (var i = 0; i < 3; i++) {
+        DesenhaEmptyRect(652,140 + 110*(i+1)-12,100,100);
+    }
+    
+    if (etapa == 'Posicionar Poderes') {
+        for (var i = 0; i < jogadorAtual.poderes.length; i++) {
+            imgPoder = new Image();
+            imgPoder.src = jogadorAtual.poderes[i].img;
+            ctx.drawImage(imgPoder, 665, 140 + 110*(i+1),75,75);
+        }
+    }
+    else {
+        for (var i = 0; i < poderesAtivados.length; i++) {
+            imgPoder = new Image();
+            imgPoder.src = poderesAtivados[i].img;
+            ctx.drawImage(imgPoder, 665, 140 + 110*(i+1),75,75);
+        }
+    }
+}
+
+DesenhaEmptyRect = (x,y,width,height) => {
+    ctx.fillRect(x,y,width,height);
+    ctx.clearRect(x+5,y+5,width-10,height-10);
 }
 
 IniciarJogo = (maximoJogadores) => {
