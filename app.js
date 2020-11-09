@@ -12,10 +12,14 @@ server.listen(2000);
 
 console.log("Server Started");
 
-var Jogador = require("./server/jogador.js");
-var tabuleiro = require("./server/tabuleiro.js");
-var turno = 0;
-var casasVitoria = [];
+var Globais = require("./server/globais.js");
+
+var Jogador = Globais.Jogador;
+var tabuleiro = Globais.tabuleiro;
+var turno = Globais.turno;
+var etapa = Globais.etapa;
+var maximoJogadores = Globais.maximoJogadores;
+var casasVitoria = Globais.casasVitoria;
 
 var SOCKET_LIST = {};
 
@@ -26,11 +30,12 @@ io.sockets.on('connection',(socket) => {
     console.log(socket.id + " Connected");
 
     Jogador.onConnect(socket);
-
+    
     socket.on("MouseDown", (data) => {
+        jogador = Jogador.list[socket.id];
         casaSelecionada = tabuleiro.TestaColisoes(data.x,data.y);
-        if (casaSelecionada != undefined) {
-            AtualizaJogo(casaSelecionada);
+        if (casaSelecionada != undefined && jogador.index == turno) {
+            AtualizaJogo(casaSelecionada,jogador.valor);
         }
     })
 
@@ -40,9 +45,22 @@ io.sockets.on('connection',(socket) => {
     })
 })
 
-function AtualizaJogo(casa) {
-    casa.valor = 'X';
-    TesteVitoria(casa.valor)
+function AtualizaJogo(casa,valor) {
+    AtualizaJogoDaVelha(casa,valor);
+    turno++;
+    if (turno == 4) {
+        turno = 0;
+    }
+    module.exports = etapa;
+}
+
+function AtualizaPosicionaPoder() {
+    
+}
+
+function AtualizaJogoDaVelha(casa,valor) {
+    casa.valor = valor;
+    TesteVitoria(casa.valor);
 }
 
 function TesteVitoria(valor) {
@@ -201,3 +219,5 @@ setInterval(() => {
         socket.emit('Update', pack);
     }
 }, 1000/25);
+
+module.exports = etapa;

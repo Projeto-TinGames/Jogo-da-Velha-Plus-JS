@@ -1,13 +1,20 @@
-function Jogador(id) {
+var valorIndex = 0;
+var valores = ["X","O","Δ","[]"];
+
+function Jogador(id,index) {
     this.id = id;
-    this.valor = valor;
+    this.index = index;
+    this.valor = valores[valorIndex];
 
     Jogador.list[this.id] = this;
 }
 
 Jogador.onConnect = (socket) => {
-    jogador = new Jogador(socket.id);
-    Jogador.list[socket.id] = jogador;
+    if (valorIndex < 4) {
+        jogador = new Jogador(socket.id,valorIndex);
+        Jogador.list[socket.id] = jogador;
+        valorIndex++;
+    }
 }
 
 Jogador.Update = () => {

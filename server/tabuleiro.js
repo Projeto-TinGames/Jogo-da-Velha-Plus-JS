@@ -1,3 +1,4 @@
+
 function Tabuleiro(quantidadeJogadores) {
     this.tamanho = [600,600];
     this.quantidadeJogadores = quantidadeJogadores;
@@ -23,6 +24,8 @@ function Tabuleiro(quantidadeJogadores) {
     }
 
     this.TestaColisoes = (x,y) => {
+        var Globais = require('../app.js');
+        console.log(Globais);
         for (l = 0; l < this.linhas; l++) {
             for (c = 0; c < this.colunas; c++) {
                 if (this.casas[l][c].TestaColisao(x,y)) {
@@ -48,15 +51,17 @@ function Casa(x,y,width,height) {
     this.jogadoresBloqueados = [];
 
     this.TestaColisao = (x,y) => {
-        if (x > this.x && x < this.x + this.width) {
-            if (y > this.y && y < this.y + this.height) {
-                return true;
+        if (this.valor == undefined) {
+            if (x > this.x && x < this.x + this.width) {
+                if (y > this.y && y < this.y + this.height) {
+                    return true;
+                }
             }
         }
         return false;
     }
 }
 
-tabuleiro = new Tabuleiro(2);
+tabuleiro = new Tabuleiro(4);
 
 module.exports = tabuleiro;
