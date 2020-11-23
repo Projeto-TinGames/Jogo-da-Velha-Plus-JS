@@ -75,6 +75,13 @@ DesenhaLinhaVitoria = (casasVitoria) => {
 }
 
 DesenhaUI = (data) => {
+    ctx.font = "22px Arial";
+    if (data.etapa == "Posicionar Poderes") {
+        ctx.fillText(data.etapa, 605, 25);
+    }
+    else {
+        ctx.fillText(data.etapa, 632, 25);
+    }
     DesenhaTurno(data.jogadorAtual);
     DesenhaPoderes(data.jogadorAtual,data.etapa,data.poderesAtivados);
 }

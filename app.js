@@ -64,10 +64,13 @@ io.sockets.on('connection',(socket) => {
     })
 
     socket.on("disconnect", () => {
-        delete SOCKET_LIST[socket.id];
         if (packGlobal != undefined) {
+            if (packGlobal.Jogador.list[socket.id] != undefined) {
+                inGame = false;
+            }
             packGlobal.Jogador.onDisconnect(socket);
         }
+        delete SOCKET_LIST[socket.id];
     })
 })
 

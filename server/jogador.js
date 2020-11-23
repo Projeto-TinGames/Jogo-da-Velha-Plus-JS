@@ -18,7 +18,7 @@ function Jogador(id,index,casasValidas,poderes) {
     }
 
     this.ReduzirCasa = (casa) => {
-        if (!this.casasInvalidas.includes(casa) && casa.valor != undefined) {
+        if (!this.casasInvalidas.includes(casa) && casa.valor == undefined) {
             this.casasValidas--;
         }
     }
