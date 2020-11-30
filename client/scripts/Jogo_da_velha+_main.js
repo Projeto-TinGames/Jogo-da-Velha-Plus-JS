@@ -1,10 +1,44 @@
 var cnv = document.getElementById("cnv");
 var ctx = cnv.getContext("2d");
 
+var listCnv = document.getElementById("listCnv");
+var listCtx = listCnv.getContext("2d");
+listCtx.lineWidth = 2;
+listCtx.font = "18px Arial";
+
+var formDiv = document.getElementById("FormDiv");
+var gameDiv = document.getElementById("GameDiv");
+var roomListDiv = document.getElementById("RoomListDiv");
+
 var socket = io();
 
 var casasPoder = [];
 var poderesPosicionados = [];
+
+socket.on("UpdateRoomList", (data) => {
+    listCtx.clearRect(0,0,300,600);
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].name != undefined) {
+            if (data[i].name.length > 11) {
+                name = data[i].name.substring(0,11) + "...";
+                listCtx.fillText(name,5,18+20*i);
+            }
+            else {
+                listCtx.fillText(data[i].name,5,18+20*i);
+            }      
+            if (data[i].situacao != undefined) {
+                listCtx.fillText(data[i].situacao,180,18+20*i);
+            }
+        }
+        else {
+            listCtx.fillText("Jogador conectando...",5,18+20*i); 
+        }
+        listCtx.beginPath();
+        listCtx.moveTo(0, 20+20*i);
+        listCtx.lineTo(300, 20+20*i);
+        listCtx.stroke();
+    }
+})
 
 socket.on("Update", (data) => {
     ctx.clearRect(0,0,800,600);
@@ -117,6 +151,14 @@ DesenhaPoderes = (jogadorAtual, etapa, poderesAtivados) => {
 DesenhaEmptyRect = (x,y,width,height) => {
     ctx.fillRect(x,y,width,height);
     ctx.clearRect(x+5,y+5,width-10,height-10);
+}
+
+EntrarSala = (nomeJogador) => {
+    formDiv.style.display = "none";
+    gameDiv.style.display = "block";
+    roomListDiv.style.display = "block";
+
+    socket.emit("EntrarSala",nomeJogador);
 }
 
 IniciarJogo = (maximoJogadores) => {

@@ -5,16 +5,28 @@
         <title>Jogo da Velha+</title>
     </head>
     <body>
-        <div style="text-align:center">
-            <canvas id="cnv" width="800" height="600" style="border:1px solid #000000;"></canvas>
+        <div id="FormDiv" style="text-align:center;display:block">
+            <form>
+                Digite o seu nome: <input type="text" id ="nomeJogador"></input>
+                <button type="button" onclick="EntrarSala(nomeJogador.value)">Iniciar</button>
+            </form>
         </div>
-        <form style="text-align:center">
-            Digite o número de jogadores: <input type="number" id ="maximoJogadores" min="1" max="4"></input>
-            <button type="button" onclick="IniciarJogo(maximoJogadores.value)">Iniciar</button>
-        </form>
-        <div style="text-align:center">
-            <button type="button" id="preparar/despreparar" onclick="Preparar()">Preparar</button>
+        <div id="RoomListDiv" style="float:right;display:none">
+            <canvas id="listCnv" width="300" height="600" style="border:1px solid #000000;"></canvas>
         </div>
+        <div id="GameDiv" style="text-align:center;display:none">
+            <div>
+                <canvas id="cnv" width="800" height="600" style="border:1px solid #000000;"></canvas>
+            </div>
+            <form>
+                Digite o número de jogadores: <input type="number" id ="maximoJogadores" min="1" max="4"></input>
+                <button type="button" onclick="IniciarJogo(maximoJogadores.value)">Iniciar</button>
+            </form>
+            <div>
+                <button type="button" id="preparar/despreparar" onclick="Preparar()">Preparar</button>
+            </div>
+        </div>
+        
         <script src = "https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.0/socket.io.js"></script>
         <script src = "/client/scripts/Jogo_da_velha+_main.js"></script>
     </body>

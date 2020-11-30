@@ -21,6 +21,7 @@ var io = require('socket.io')(server,{});
 io.sockets.on('connection',(socket) => {
     socket.id = Math.random();
     socket.ready = false;
+    socket.inGame = false;
     SOCKET_LIST[socket.id] = socket;
     console.log(socket.id + " Connected");
     
@@ -48,6 +49,9 @@ io.sockets.on('connection',(socket) => {
                 packGlobal = Globais(socketsPreparados,data);
                 packGlobal.AtualizaJogoDaVelha = AtualizaJogoDaVelha;
                 packGlobal.TesteVitoria = TesteVitoria;
+                for (var j in socketsPreparados) {
+                    socketsPreparados[j].inGame = true;
+                }
                 inGame = true;
             }
             else {
@@ -57,6 +61,10 @@ io.sockets.on('connection',(socket) => {
         else {
             socket.emit("Erro", "Uma partida já está em andamento");
         }
+    })
+
+    socket.on("EntrarSala", (name) => {
+        socket.name = name;
     })
 
     socket.on("Ready", () => {
@@ -127,6 +135,10 @@ function AtualizaJogoDaVelha(casa,jogador) {
     for (i in packGlobal.Jogador.list) {
         if (packGlobal.Jogador.list[i].index == packGlobal.turno) {
             if (packGlobal.Jogador.list[i].casasValidas == 0) {
+                for (j in SOCKET_LIST) {
+                    socket = SOCKET_LIST[j];
+                    socket.inGame = false;
+                }
                 inGame = false;
             }
             break;
@@ -226,8 +238,8 @@ function TesteDiagonalHorizontal(valor) {
 
 function TesteDiagonalVertical(valor) {
     for (l = 0; l < packGlobal.tabuleiro.linhas - 2; l++) {
-        contador = 0
-        casasVitoria = []
+        contador = 0;
+        casasVitoria = [];
         for (c = 0; c < packGlobal.tabuleiro.colunas; c++) {
             if (l+c < packGlobal.tabuleiro.linhas) {
                 if (packGlobal.tabuleiro.casas[l+c][c].valor == valor) {
@@ -279,10 +291,36 @@ function LinhaVitoria(casasVitoria) {
 
     packGlobal.tabuleiro.casasVitoria = {primeiraCasa:posicaoPrimeiraCasa, ultimaCasa:posicaoUltimaCasa};
 
+    for (i in SOCKET_LIST) {
+        socket = SOCKET_LIST[i];
+        socket.inGame = false;
+    }
     inGame = false;
 }
 
 setInterval(() => {
+    var roomList = []
+    for (var i in SOCKET_LIST) {
+        socket = SOCKET_LIST[i];
+        if (socket.ready) {
+            socket.situacao = "Preparado";
+        }
+        if (socket.inGame) {
+            socket.situacao = "Jogando";
+        }
+        if (!socket.ready && !socket.inGame) {
+            socket.situacao = "Despreparado"
+        }
+        socketInfo = {
+            name:socket.name,
+            situacao:socket.situacao
+        }
+        roomList.push(socketInfo);
+    }
+    for (var i in SOCKET_LIST) {
+        socket = SOCKET_LIST[i];
+        socket.emit('UpdateRoomList', roomList);
+    }
     if (packGlobal != undefined) {
         for (i in packGlobal.Jogador.list) {
             if (packGlobal.Jogador.list[i].index == packGlobal.turno) {
