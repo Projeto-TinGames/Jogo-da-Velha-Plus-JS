@@ -174,12 +174,12 @@ IniciarJogo = (maximoJogadores) => {
 }
 
 Preparar = () => {
-    text = document.getElementById("preparar/despreparar").innerHTML;
+    text = document.getElementById("TogglePreparar").innerHTML;
     if (text == "Preparar") {
-        document.getElementById("preparar/despreparar").innerHTML = "Despreparar";
+        document.getElementById("TogglePreparar").innerHTML = "Despreparar";
     }
     else {
-        document.getElementById("preparar/despreparar").innerHTML = "Preparar";
+        document.getElementById("TogglePreparar").innerHTML = "Preparar";
     }
     socket.emit("Ready");
 }

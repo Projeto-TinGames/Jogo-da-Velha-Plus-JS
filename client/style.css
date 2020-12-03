@@ -1,0 +1,27 @@
+#FormDiv {
+    text-align:center;
+    display:block;
+}
+
+#RoomListDiv {
+    float:right;
+    display:none;
+}
+
+#TogglePreparar {
+    text-align:center;
+}
+
+#Feedback {
+    text-align:center;
+}
+
+.DescricaoPoder {
+    margin-left:6rem;
+    width:300px;
+    text-align:justify;
+}
+
+canvas {
+    border:1px solid #000000;
+}
