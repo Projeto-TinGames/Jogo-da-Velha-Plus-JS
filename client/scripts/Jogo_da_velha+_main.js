@@ -94,7 +94,7 @@ DesenhaTabuleiro = (tabuleiro) => {
             if (tabuleiro.casas[l][c].valor != undefined) {
                 ctx.clearRect(tabuleiro.casas[l][c].x + Math.floor(tabuleiro.casas[l][c].width/4), tabuleiro.casas[l][c].y + Math.floor(tabuleiro.casas[l][c].height/4), Math.floor(tabuleiro.casas[l][c].width/2), Math.floor(tabuleiro.casas[l][c].height/2));
                 var img = new Image();
-                img.src = "../client/img/" + tabuleiro.casas[l][c].valor + ".png";
+                img.src = "../client/img/Jogadores/" + tabuleiro.casas[l][c].valor + ".png";
                 ctx.drawImage(img, tabuleiro.casas[l][c].x + Math.floor(tabuleiro.casas[l][c].width/4), tabuleiro.casas[l][c].y + Math.floor(tabuleiro.casas[l][c].height/4), Math.floor(tabuleiro.casas[l][c].width/2), Math.floor(tabuleiro.casas[l][c].height/2));
             }
         }
@@ -123,7 +123,7 @@ DesenhaUI = (data) => {
 DesenhaTurno = (jogadorAtual) => {
     DesenhaEmptyRect(652,38,100,100)
     imgJogador = new Image();
-    imgJogador.src = "../client/img/" + jogadorAtual.valor + ".png";
+    imgJogador.src = "../client/img/Jogadores/" + jogadorAtual.valor + ".png";
     ctx.drawImage(imgJogador, 665, 50, 75, 75);
 }
 

@@ -2,21 +2,22 @@
 var manager = require("../app.js");
 
 function Poder() {
-    this.img = "../client/img/X.png";
+    this.img = "../client/img/Jogadores/X.png";
 
     this.Executa = (obj,casa) => {
         manager = require("../app.js");
-        console.log(obj.constructor.name);
         casa.poderes.splice(casa.poderes.indexOf(this),1)
         if (manager.poderesAtivados.length == 3) {
             manager.poderesAtivados.shift();
         }
-        manager.poderesAtivados.push(this);
+        manager.poderesAtivados.push(obj);
     }
 }
 
 function Repeticao() {
     Poder.call(this);
+
+    this.img = "../client/img/Poderes/repeticao.png";
 
     super_executa = this.Executa;
     this.Executa = (casa) => {
@@ -27,6 +28,8 @@ function Repeticao() {
 
 function Troca() {
     Poder.call(this);
+
+    this.img = "../client/img/Poderes/troca.png";
 
     super_executa = this.Executa;
     this.Executa = (casa) => {
@@ -41,7 +44,6 @@ function Troca() {
             jogadoresMudarPara.push(manager.Jogador.list[i]);
         }
 
-        manager.cancelarPassarTurno = jogadores.length - 1;
 
         for (var i = 0; i < jogadoresMudar.length; i++) {
             while (jogadoresMudar[i] == jogadoresMudarPara[i]) {
@@ -60,6 +62,7 @@ function Troca() {
                             indexMudar = manager.Jogador.list[i].index;
                         }
                     }
+                    manager.cancelarPassarTurno = 1;
                     manager.AtualizaJogoDaVelha(manager.tabuleiro.casas[l][c],jogadoresMudarPara[indexMudar]);
                 }
             }
@@ -75,6 +78,8 @@ function Troca() {
 
 function Remocao() {
     Poder.call(this);
+
+    this.img = "../client/img/Poderes/remocao.png";
 
     super_executa = this.Executa;
     this.Executa = (casa,jogador) => {
@@ -102,6 +107,8 @@ function Remocao() {
 function Pular_Vez() {
     Poder.call(this);
 
+    this.img = "../client/img/Poderes/pular_vez.png";
+
     super_executa = this.Executa;
     this.Executa = (casa) => {
         super_executa(this,casa);
@@ -114,6 +121,8 @@ function Pular_Vez() {
 
 function Inverter_Ordem() {
     Poder.call(this);
+
+    this.img = "../client/img/Poderes/inverter_ordem.png";
 
     super_executa = this.Executa;
     this.Executa = (casa,jogador) => {
@@ -138,6 +147,8 @@ function Inverter_Ordem() {
 
 function Voltar_Turno() {
     Poder.call(this);
+
+    this.img = "../client/img/Poderes/voltar_turno.png";
 
     super_executa = this.Executa;
     this.Executa = (casa) => {
