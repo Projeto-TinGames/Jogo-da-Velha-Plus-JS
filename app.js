@@ -8,7 +8,7 @@ app.get('/', (req,res,next) => {
 
 app.use('/client',express.static(__dirname + "/client"));
 
-server.listen(process.env.PORT || 2000);
+server.listen(process.env.PORT || 3000);
 
 console.log("Server Started");
 
