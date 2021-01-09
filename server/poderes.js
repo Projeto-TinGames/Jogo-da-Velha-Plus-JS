@@ -6,11 +6,11 @@ function Poder() {
 
     this.Executa = (obj,casa) => {
         manager = require("../app.js");
-        casa.poderes.splice(casa.poderes.indexOf(this),1)
         if (manager.poderesAtivados.length == 3) {
+
             manager.poderesAtivados.shift();
         }
-        manager.poderesAtivados.push(obj);
+        manager.poderesAtivados.unshift(obj);
     }
 }
 
@@ -20,8 +20,9 @@ function Repeticao() {
     this.img = "../client/img/Poderes/repeticao.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa) => {
+    this.Executa = (casa,jogador) => {
         super_executa(this,casa);
+        manager.poderAtivado.push([this.constructor.name,casa]);
         manager.cancelarPassarTurno++;
     }
 }
@@ -32,8 +33,9 @@ function Troca() {
     this.img = "../client/img/Poderes/troca.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa) => {
+    this.Executa = (casa,jogador) => {
         super_executa(this,casa);
+        manager.poderAtivado.push([this.constructor.name,casa]);
         jogadores = [];
         jogadoresMudar = [];
         jogadoresMudarPara = [];
@@ -84,6 +86,7 @@ function Remocao() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador) => {
         super_executa(this,casa);
+        manager.poderAtivado.push([this.constructor.name,casa]);
 
         var posicoesCasasComValor = []
 
@@ -110,8 +113,9 @@ function Pular_Vez() {
     this.img = "../client/img/Poderes/pular_vez.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa) => {
+    this.Executa = (casa,jogador) => {
         super_executa(this,casa);
+        manager.poderAtivado.push([this.constructor.name,casa]);
         manager.turno++;
         if (manager.turno > manager.maximoJogadores-1) {
             manager.turno = 0;
@@ -127,6 +131,7 @@ function Inverter_Ordem() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador) => {
         super_executa(this,casa);
+        manager.poderAtivado.push([this.constructor.name,casa]);
         if (manager.jogadoresInvertidos) {
             var indexInicial = 0;
             var somaIndex = 1;
@@ -151,8 +156,9 @@ function Voltar_Turno() {
     this.img = "../client/img/Poderes/voltar_turno.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa) => {
+    this.Executa = (casa,jogador) => {
         super_executa(this,casa);
+        manager.poderAtivado.push([this.constructor.name,casa]);
         manager.cancelarPassarTurno++;
         manager.turno--;
         if (manager.turno < 0) {

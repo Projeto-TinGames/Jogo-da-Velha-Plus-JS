@@ -17,6 +17,7 @@ var poderesPosicionados = [];
 
 socket.on("UpdateRoomList", (data) => {
     listCtx.clearRect(0,0,300,600);
+    ctx.fillStyle = "#FFAEBC";
     for (var i = 0; i < data.length; i++) {
         if (data[i].name != undefined) {
             if (data[i].name.length > 11) {
@@ -38,6 +39,7 @@ socket.on("UpdateRoomList", (data) => {
         listCtx.lineTo(300, 20+20*i);
         listCtx.stroke();
     }
+    ctx.fillStyle = "#000000";
 })
 
 socket.on("Update", (data) => {
@@ -45,6 +47,17 @@ socket.on("Update", (data) => {
     DesenhaTabuleiro(data.tabuleiro);
     if (data.tabuleiro.casasVitoria != undefined) {
         DesenhaLinhaVitoria(data.tabuleiro.casasVitoria);
+    }
+    if (data.poderAtivado.length > 0) {
+        for (i = 0; i < data.poderAtivado.length; i++) {
+            alert("Executado: " + data.poderAtivado[i][0]);
+            for (var j = 0; j < casasPoder.length; j++) {
+                if (casasPoder[j].x == data.poderAtivado[i][1].x && casasPoder[j].y == data.poderAtivado[i][1].y) {
+                    poderesPosicionados.splice(j,1);
+                    casasPoder.splice(j,1);
+                }
+            }
+        }
     }
     DesenhaUI(data.UI);
 })
@@ -71,6 +84,9 @@ cnv.onmousedown = (event) => {
 }
 
 DesenhaTabuleiro = (tabuleiro) => {
+    ctx.fillStyle = "#A0E7E5";
+    ctx.fillRect(0, 0, cnv.width, cnv.height);
+    ctx.strokeStyle = "#B4F8C8";
     ctx.lineWidth = 5;
     for (var c = 1; c < tabuleiro.colunas + 1; c++) {
         ctx.beginPath();
@@ -84,7 +100,7 @@ DesenhaTabuleiro = (tabuleiro) => {
         ctx.lineTo(tabuleiro.tamanho[1],l*tabuleiro.casas[0][0].height);
         ctx.stroke();
     }
-    for (var i = 0; i < casasPoder.length; i++) {
+    for (var i = 0; i < poderesPosicionados.length; i++) {
         var img = new Image();
         img.src = poderesPosicionados[i].img;
         ctx.drawImage(img, casasPoder[i].x + Math.floor(casasPoder[i].width/4), casasPoder[i].y + Math.floor(casasPoder[i].height/4), Math.floor(casasPoder[i].width/2), Math.floor(casasPoder[i].height/2));
@@ -93,23 +109,29 @@ DesenhaTabuleiro = (tabuleiro) => {
         for (var c = 0; c < tabuleiro.colunas; c++) {
             if (tabuleiro.casas[l][c].valor != undefined) {
                 ctx.clearRect(tabuleiro.casas[l][c].x + Math.floor(tabuleiro.casas[l][c].width/4), tabuleiro.casas[l][c].y + Math.floor(tabuleiro.casas[l][c].height/4), Math.floor(tabuleiro.casas[l][c].width/2), Math.floor(tabuleiro.casas[l][c].height/2));
+                ctx.fillRect(tabuleiro.casas[l][c].x + Math.floor(tabuleiro.casas[l][c].width/4), tabuleiro.casas[l][c].y + Math.floor(tabuleiro.casas[l][c].height/4), Math.floor(tabuleiro.casas[l][c].width/2), Math.floor(tabuleiro.casas[l][c].height/2));
                 var img = new Image();
                 img.src = "../client/img/Jogadores/" + tabuleiro.casas[l][c].valor + ".png";
                 ctx.drawImage(img, tabuleiro.casas[l][c].x + Math.floor(tabuleiro.casas[l][c].width/4), tabuleiro.casas[l][c].y + Math.floor(tabuleiro.casas[l][c].height/4), Math.floor(tabuleiro.casas[l][c].width/2), Math.floor(tabuleiro.casas[l][c].height/2));
             }
         }
     }
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#000000";
 }
 
 DesenhaLinhaVitoria = (casasVitoria) => {
+    ctx.strokeStyle = "#B4F8C8";
     ctx.beginPath();
     ctx.moveTo(casasVitoria.primeiraCasa[0],casasVitoria.primeiraCasa[1]);
     ctx.lineTo(casasVitoria.ultimaCasa[0],casasVitoria.ultimaCasa[1]);
     ctx.stroke();
+    ctx.strokeStyle = "#000000";
 }
 
 DesenhaUI = (data) => {
     ctx.font = "22px Arial";
+    ctx.fillStyle = "#B4F8C8";
     if (data.etapa == "Posicionar Poderes") {
         ctx.fillText(data.etapa, 605, 25);
     }
@@ -118,10 +140,11 @@ DesenhaUI = (data) => {
     }
     DesenhaTurno(data.jogadorAtual);
     DesenhaPoderes(data.jogadorAtual,data.etapa,data.poderesAtivados);
+    ctx.fillStyle = "#000000";
 }
 
 DesenhaTurno = (jogadorAtual) => {
-    DesenhaEmptyRect(652,38,100,100)
+    DesenhaEmptyRect(652,38,100,100,"#FFAEBC")
     imgJogador = new Image();
     imgJogador.src = "../client/img/Jogadores/" + jogadorAtual.valor + ".png";
     ctx.drawImage(imgJogador, 665, 50, 75, 75);
@@ -129,7 +152,12 @@ DesenhaTurno = (jogadorAtual) => {
 
 DesenhaPoderes = (jogadorAtual, etapa, poderesAtivados) => {
     for (var i = 0; i < 3; i++) {
-        DesenhaEmptyRect(652,140 + 110*(i+1)-12,100,100);
+        if (etapa == 'Posicionar Poderes' && i == 0) {
+            DesenhaEmptyRect(652,140 + 110*(i+1)-12,100,100,"#FFAEBC");
+        }
+        else {
+            DesenhaEmptyRect(652,140 + 110*(i+1)-12,100,100,"#FBE7C6");
+        }
     }
     
     if (etapa == 'Posicionar Poderes') {
@@ -148,9 +176,13 @@ DesenhaPoderes = (jogadorAtual, etapa, poderesAtivados) => {
     }
 }
 
-DesenhaEmptyRect = (x,y,width,height) => {
+DesenhaEmptyRect = (x,y,width,height,color) => {
+    ctx.fillStyle = color;
     ctx.fillRect(x,y,width,height);
     ctx.clearRect(x+5,y+5,width-10,height-10);
+    ctx.fillStyle = "#B4F8C8";
+    ctx.fillRect(x+5,y+5,width-10,height-10);
+    ctx.fillStyle = "black";
 }
 
 EntrarSala = (nomeJogador) => {

@@ -13,6 +13,7 @@ PackInicial = (socketList,maximoJogadores) => {
         poderesAtivados:[],
         cancelarTesteVitoria:false,
         jogadoresInvertidos:false,
+        poderAtivado: [],
         cancelarPassarTurno:0
     }
     pack.Jogador.CriarLista(socketList,maximoJogadores,poderes);

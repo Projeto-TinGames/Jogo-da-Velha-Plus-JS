@@ -114,7 +114,6 @@ function AtualizaJogoDaVelha(casa,jogador) {
     for (i in packGlobal.Jogador.list) {
         packGlobal.Jogador.list[i].ReduzirCasa(casa);
     }
-
     casa.valor = valor;
     casa.ExecutaPoderes(jogador);
     if (!packGlobal.cancelarTesteVitoria) {
@@ -334,11 +333,15 @@ setInterval(() => {
                 jogadorAtual:jogadorAtual,
                 etapa:packGlobal.etapa,
                 poderesAtivados:packGlobal.poderesAtivados
-            }
+            },
+            poderAtivado:packGlobal.poderAtivado
         };
         for (var i in SOCKET_LIST) {
             socket = SOCKET_LIST[i];
             socket.emit('Update', pack);
+        }
+        if (packGlobal.poderAtivado.length > 0) {
+            packGlobal.poderAtivado = [];
         }
     }
 }, 1000/25);
