@@ -332,9 +332,10 @@ setInterval(() => {
             UI:{
                 jogadorAtual:jogadorAtual,
                 etapa:packGlobal.etapa,
-                poderesAtivados:packGlobal.poderesAtivados
+                poderesAtivados:packGlobal.poderesAtivados,
             },
-            poderAtivado:packGlobal.poderAtivado
+            poderAtivado:packGlobal.poderAtivado,
+            inGame:inGame
         };
         for (var i in SOCKET_LIST) {
             socket = SOCKET_LIST[i];

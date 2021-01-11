@@ -12,6 +12,8 @@ var roomListDiv = document.getElementById("RoomListDiv");
 
 var socket = io();
 
+var jogo_da_velha_ost = new Sound("../client/snd/jogo_da_velha_ost.wav",true);
+
 var casasPoder = [];
 var poderesPosicionados = [];
 
@@ -45,6 +47,8 @@ socket.on("UpdateRoomList", (data) => {
 socket.on("Update", (data) => {
     ctx.clearRect(0,0,800,600);
     DesenhaTabuleiro(data.tabuleiro);
+    console.log(data);
+    ControlaMusica(data.inGame);
     if (data.tabuleiro.casasVitoria != undefined) {
         DesenhaLinhaVitoria(data.tabuleiro.casasVitoria);
     }
@@ -183,6 +187,15 @@ DesenhaEmptyRect = (x,y,width,height,color) => {
     ctx.fillStyle = "#B4F8C8";
     ctx.fillRect(x+5,y+5,width-10,height-10);
     ctx.fillStyle = "black";
+}
+
+ControlaMusica = (inGame) => {
+    if (inGame) {
+        jogo_da_velha_ost.play();
+    }
+    else {
+        jogo_da_velha_ost.stop();
+    }
 }
 
 EntrarSala = (nomeJogador) => {
