@@ -1,10 +1,8 @@
 
-var manager = require("../app.js");
-
 function Poder() {
     this.img = "../client/img/Jogadores/X.png";
 
-    this.Executa = (obj,casa) => {
+    this.Executa = (obj,jogador) => {
         manager = require("../app.js");
         if (manager.poderesAtivados.length == 3) {
 

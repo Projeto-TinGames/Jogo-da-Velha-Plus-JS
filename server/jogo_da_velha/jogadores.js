@@ -1,8 +1,8 @@
-function Jogador(id,index,casasValidas,poderes) {
+function Jogador(id,casasValidas,poderes) {
     this.id = id;
-    this.index = index;
+    //this.index = index;
     var valores = ["X","O","Δ","[]"];
-    this.valor = valores[index];
+    //this.valor = valores[index];
     this.poderes = [];
     this.casasInvalidas = [];
     this.casasValidas = casasValidas;
@@ -27,7 +27,7 @@ function Jogador(id,index,casasValidas,poderes) {
 }
 
 Jogador.onConnect = (socket, valorIndex, maximoJogadores, poderes) => {
-    casasValidas = (4 + maximoJogadores - 2)*(4 + maximoJogadores - 2)
+    casasValidas = (4 + maximoJogadores - 2)*(4 + maximoJogadores - 2);
     jogador = new Jogador(socket.id,valorIndex,casasValidas, poderes);
     Jogador.list[socket.id] = jogador;
 }

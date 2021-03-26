@@ -2,9 +2,6 @@ var cnv = document.getElementById("cnv");
 var ctx = cnv.getContext("2d");
 
 var listCnv = document.getElementById("listCnv");
-var listCtx = listCnv.getContext("2d");
-listCtx.lineWidth = 2;
-listCtx.font = "18px Arial";
 
 var formDiv = document.getElementById("FormDiv");
 var gameDiv = document.getElementById("GameDiv");
@@ -16,6 +13,11 @@ var jogo_da_velha_ost = new Sound("../client/snd/jogo_da_velha_ost.wav",true);
 
 var casasPoder = [];
 var poderesPosicionados = [];
+var salaIndex = undefined;
+
+socket.on("DefinirSala", (data) => {
+    salaIndex = data;
+})
 
 socket.on("UpdateRoomList", (data) => {
     listCtx.clearRect(0,0,300,600);
@@ -46,7 +48,17 @@ socket.on("UpdateRoomList", (data) => {
 
 socket.on("Update", (data) => {
     ctx.clearRect(0,0,800,600);
-    DesenhaTabuleiro(data.tabuleiro);
+    if (salaIndex == undefined) {
+        ctx.fillStyle = "#173F5F";
+        ctx.fillRect(0,0,800,600);
+        ctx.fillStyle = "#3CAEA3";
+        ctx.fillRect(400,300,200,75);
+        ctx.fillRect(400,425,200,75);
+    }
+    else {
+        console.log(data[salaIndex]);
+    }
+    /*DesenhaTabuleiro(data.tabuleiro);
     console.log(data);
     ControlaMusica(data.inGame);
     if (data.tabuleiro.casasVitoria != undefined) {
@@ -63,7 +75,7 @@ socket.on("Update", (data) => {
             }
         }
     }
-    DesenhaUI(data.UI);
+    DesenhaUI(data.UI);*/
 })
 
 socket.on("PosicionaPoder", (data) => {
@@ -81,10 +93,11 @@ socket.on("Erro", (data) => {
 })
 
 cnv.onmousedown = (event) => {
-    var rect = cnv.getBoundingClientRect();
+    EntrarSala();
+    /*var rect = cnv.getBoundingClientRect();
     x = event.clientX - rect.left;
     y = event.clientY - rect.top;
-    socket.emit("MouseDown", {x:x,y:y});
+    socket.emit("MouseDown", {x:x,y:y});*/ 
 }
 
 DesenhaTabuleiro = (tabuleiro) => {
@@ -198,12 +211,8 @@ ControlaMusica = (inGame) => {
     }
 }
 
-EntrarSala = (nomeJogador) => {
-    formDiv.style.display = "none";
-    gameDiv.style.display = "block";
-    roomListDiv.style.display = "block";
-
-    socket.emit("EntrarSala",nomeJogador);
+EntrarSala = () => {
+    socket.emit("Entrar", {privado:false,senha:"",maximoJogadores:2});
 }
 
 IniciarJogo = (maximoJogadores) => {

@@ -6,26 +6,10 @@
         <title>Jogo da Velha+</title>
     </head>
     <body>
-        <div id="FormDiv">
-            <form>
-                Digite o seu nome: <input type="text" id ="nomeJogador"></input>
-                <button type="button" onclick="EntrarSala(nomeJogador.value)">Iniciar</button>
-            </form>
-        </div>
-        <div id="RoomListDiv">
-            <canvas id="listCnv" width="300" height="600"></canvas>
-        </div>
-        <div id="GameDiv" style="display:none">
+        <div id="GameDiv">
             <div style="text-align:center">
                 <canvas id="cnv" width="800" height="600"></canvas>
             </div>
-            <div id="TogglePreparar">
-                <button id="BotaoPreparar" type="button" onclick="Preparar()">Preparar</button>
-            </div>
-            <form style="text-align:center">
-                Digite o número de jogadores: <input type="number" id ="maximoJogadores" min="1" max="4"></input>
-                <button type="button" onclick="IniciarJogo(maximoJogadores.value)">Iniciar</button>
-            </form>
             <h1 style="text-align:center;margin-bottom:0;">Armadilhas</h1>
             <div id="Instrucoes">
                 <div class="DescricaoPoder">

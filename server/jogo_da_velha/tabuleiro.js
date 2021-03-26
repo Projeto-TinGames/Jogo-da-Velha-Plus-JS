@@ -1,4 +1,3 @@
-
 function Tabuleiro(quantidadeJogadores) {
     this.tamanho = [600,600];
     this.quantidadeJogadores = quantidadeJogadores;
@@ -62,9 +61,9 @@ function Casa(x,y,width,height) {
         this.poderes.push(poder);
     }
 
-    this.ExecutaPoderes = (jogador) => {
+    this.ExecutaPoderes = () => {
         while (this.poderes.length > 0) {
-            this.poderes.shift().Executa(this,jogador);
+            this.poderes.shift().Executa(this);
         }
     }
 }
