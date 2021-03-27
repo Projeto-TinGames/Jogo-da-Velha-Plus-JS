@@ -1,14 +1,12 @@
-
 function Poder() {
     this.img = "../client/img/Jogadores/X.png";
 
-    this.Executa = (obj,jogador) => {
-        manager = require("../app.js");
-        if (manager.poderesAtivados.length == 3) {
+    this.Executa = (obj,jogador,sala) => {
+        if (sala.poderesAtivados.length == 3) {
 
-            manager.poderesAtivados.shift();
+            sala.poderesAtivados.shift();
         }
-        manager.poderesAtivados.unshift(obj);
+        sala.poderesAtivados.unshift(obj);
     }
 }
 
@@ -18,10 +16,10 @@ function Repeticao() {
     this.img = "../client/img/Poderes/repeticao.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa,jogador) => {
-        super_executa(this,casa);
-        manager.poderAtivado.push([this.constructor.name,casa]);
-        manager.cancelarPassarTurno++;
+    this.Executa = (casa,jogador,sala) => {
+        super_executa(this,jogador,sala);
+        sala.poderesAtivados.push([this.constructor.name,casa]);
+        sala.cancelarPassarTurno++;
     }
 }
 
@@ -31,47 +29,48 @@ function Troca() {
     this.img = "../client/img/Poderes/troca.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa,jogador) => {
-        super_executa(this,casa);
-        manager.poderAtivado.push([this.constructor.name,casa]);
+    this.Executa = (casa,jogador,sala) => {
+        super_executa(this,casa,sala);
+        sala.poderesAtivados.push([this.constructor.name,casa]);
         jogadores = [];
         jogadoresMudar = [];
         jogadoresMudarPara = [];
 
-        for (var i in manager.Jogador.list) {
-            jogadores.push(manager.Jogador.list[i]);
-            jogadoresMudar.push(manager.Jogador.list[i]);
-            jogadoresMudarPara.push(manager.Jogador.list[i]);
+        for (var i in sala.Jogador.list) {
+            jogadores.push(sala.Jogador.list[i]);
+            jogadoresMudar.push(sala.Jogador.list[i]);
+            jogadoresMudarPara.push(sala.Jogador.list[i]);
         }
 
 
         for (var i = 0; i < jogadoresMudar.length; i++) {
             while (jogadoresMudar[i] == jogadoresMudarPara[i]) {
-                jogadoresMudarPara[i] = jogadores[Math.floor(Math.random() * jogadores.length)];
+                
+                esMudarPara[i] = jogadores[Math.floor(Math.random() * jogadores.length)];
             }
             jogadores.splice(jogadores.indexOf(jogadoresMudarPara[i]),1);
         }
 
-        manager.cancelarTesteVitoria = true;
+        sala.cancelarTesteVitoria = true;
 
-        for (var l = 0; l < manager.tabuleiro.linhas; l++) {
-            for (var c = 0; c < manager.tabuleiro.colunas; c++) {
-                if (manager.tabuleiro.casas[l][c].valor != undefined) {
-                    for (i in manager.Jogador.list) {
-                        if (manager.tabuleiro.casas[l][c].valor == manager.Jogador.list[i].valor) {
-                            indexMudar = manager.Jogador.list[i].index;
+        for (var l = 0; l < sala.tabuleiro.linhas; l++) {
+            for (var c = 0; c < sala.tabuleiro.colunas; c++) {
+                if (sala.tabuleiro.casas[l][c].valor != undefined) {
+                    for (i in sala.Jogador.list) {
+                        if (sala.tabuleiro.casas[l][c].valor == sala.Jogador.list[i].valor) {
+                            indexMudar = sala.Jogador.list[i].index;
                         }
                     }
-                    manager.cancelarPassarTurno = 1;
-                    manager.AtualizaJogoDaVelha(manager.tabuleiro.casas[l][c],jogadoresMudarPara[indexMudar]);
+                    sala.cancelarPassarTurno = 1;
+                    sala.AtualizaJogoDaVelha(sala.tabuleiro.casas[l][c],jogadoresMudarPara[indexMudar]);
                 }
             }
         }
 
-        manager.cancelarTesteVitoria = false;
+        sala.cancelarTesteVitoria = false;
 
-        for (var i in manager.Jogador.list) {
-            manager.TesteVitoria(manager.Jogador.list[i]);
+        for (var i in sala.Jogador.list) {
+            sala.TesteVitoria(sala.Jogador.list[i]);
         }
     }
 }
@@ -82,15 +81,15 @@ function Remocao() {
     this.img = "../client/img/Poderes/remocao.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa,jogador) => {
-        super_executa(this,casa);
-        manager.poderAtivado.push([this.constructor.name,casa]);
+    this.Executa = (casa,jogador,sala) => {
+        super_executa(this,casa,sala);
+        sala.poderesAtivados.push([this.constructor.name,casa]);
 
         var posicoesCasasComValor = []
 
-        for (l = 0; l < manager.tabuleiro.linhas; l++) {
-            for (c = 0; c < manager.tabuleiro.colunas; c++) {
-                casaComValor = manager.tabuleiro.casas[l][c];
+        for (l = 0; l < sala.tabuleiro.linhas; l++) {
+            for (c = 0; c < sala.tabuleiro.colunas; c++) {
+                casaComValor = sala.tabuleiro.casas[l][c];
                 if (casaComValor.valor != jogador.valor && casaComValor.valor != undefined) {
                     posicoesCasasComValor.push([l,c]);
                 }
@@ -100,7 +99,7 @@ function Remocao() {
         if (posicoesCasasComValor.length > 0) {
             indexAleatoria = Math.floor(Math.random() * posicoesCasasComValor.length);
             casaEliminada = posicoesCasasComValor[indexAleatoria];
-            manager.tabuleiro.casas[casaEliminada[0]][casaEliminada[1]].valor = undefined;
+            sala.tabuleiro.casas[casaEliminada[0]][casaEliminada[1]].valor = undefined;
         }
     }
 }
@@ -111,12 +110,12 @@ function Pular_Vez() {
     this.img = "../client/img/Poderes/pular_vez.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa,jogador) => {
-        super_executa(this,casa);
-        manager.poderAtivado.push([this.constructor.name,casa]);
-        manager.turno++;
-        if (manager.turno > manager.maximoJogadores-1) {
-            manager.turno = 0;
+    this.Executa = (casa,jogador,sala) => {
+        super_executa(this,casa,sala);
+        sala.poderesAtivados.push([this.constructor.name,casa]);
+        sala.turno++;
+        if (sala.turno > sala.maximoJogadores-1) {
+            sala.turno = 0;
         }
     }
 }
@@ -127,24 +126,24 @@ function Inverter_Ordem() {
     this.img = "../client/img/Poderes/inverter_ordem.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa,jogador) => {
-        super_executa(this,casa);
-        manager.poderAtivado.push([this.constructor.name,casa]);
-        if (manager.jogadoresInvertidos) {
+    this.Executa = (casa,jogador,sala) => {
+        super_executa(this,casa,sala);
+        sala.poderesAtivados.push([this.constructor.name,casa]);
+        if (sala.jogadoresInvertidos) {
             var indexInicial = 0;
             var somaIndex = 1;
         }
         else {
-            var indexInicial = manager.maximoJogadores-1;
+            var indexInicial = sala.maximoJogadores-1;
             var somaIndex = -1;
         }
-        manager.jogadoresInvertidos = !manager.jogadoresInvertidos;
+        sala.jogadoresInvertidos = !sala.jogadoresInvertidos;
         var soma = 0;
-        for (i in manager.Jogador.list) {
-            manager.Jogador.list[i].index = indexInicial + soma;
+        for (i in sala.Jogador.list) {
+            sala.Jogador.list[i].index = indexInicial + soma;
             soma += somaIndex;
         }
-        manager.turno = manager.Jogador.list[jogador.id].index;
+        sala.turno = sala.Jogador.list[jogador.id].index;
     }
 }
 
@@ -154,13 +153,13 @@ function Voltar_Turno() {
     this.img = "../client/img/Poderes/voltar_turno.png";
 
     super_executa = this.Executa;
-    this.Executa = (casa,jogador) => {
-        super_executa(this,casa);
-        manager.poderAtivado.push([this.constructor.name,casa]);
-        manager.cancelarPassarTurno++;
-        manager.turno--;
-        if (manager.turno < 0) {
-            manager.turno = manager.maximoJogadores-1;
+    this.Executa = (casa,jogador,sala) => {
+        super_executa(this,casa,sala);
+        sala.poderesAtivados.push([this.constructor.name,casa]);
+        sala.cancelarPassarTurno++;
+        sala.turno--;
+        if (sala.turno < 0) {
+            sala.turno = sala.maximoJogadores-1;
         }
     }
 }
