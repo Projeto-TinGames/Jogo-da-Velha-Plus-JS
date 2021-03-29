@@ -39,6 +39,9 @@ socket.on("AtualizarLista", (data) => {
 socket.on("AcionarEvento", (data) => {
     var eventosValidos = {
         PosicionarPoderes() {
+            if (!elementosFinalizacao.includes(botaoContinuar)) {
+                elementosFinalizacao.unshift(botaoContinuar);
+            }
             casasPoder = [];
             poderesPosicionados = [];
             PopUp("Etapa: Posicionar Poderes",[],135,300)
@@ -66,11 +69,11 @@ socket.on("AcionarEvento", (data) => {
 })
 
 cnv.onmousedown = (event) => {
+    var rect = cnv.getBoundingClientRect();
+    clientMouse.x = event.clientX - rect.left;
+    clientMouse.y = event.clientY - rect.top;
+    clientMouse.clicou = true;
     if (!janelaOpcoes && !listaJogadores && timerPopup == 0) { 
-        var rect = cnv.getBoundingClientRect();
-        clientMouse.x = event.clientX - rect.left;
-        clientMouse.y = event.clientY - rect.top;
-        clientMouse.clicou = true;
         if (salaCliente != undefined) {
             socket.emit("MouseDown", {salaID:salaCliente.index,x:clientMouse.x,y:clientMouse.y});
         }
