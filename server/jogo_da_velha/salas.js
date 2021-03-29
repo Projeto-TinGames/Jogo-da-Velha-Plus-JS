@@ -63,7 +63,7 @@ function Sala(index,privado,senha,maximoJogadores,criadoJogador) {
             }
             if (this.criadoJogador) {
                 this.contadorExpiracao++
-                if (this.contadorExpiracao >= 60) {
+                if (this.contadorExpiracao >= 600) {
                     this.DeletarSala();
                 }
             }

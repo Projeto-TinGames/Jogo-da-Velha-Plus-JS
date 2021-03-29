@@ -162,7 +162,7 @@ var MenuCriar = function() {
     DesenharCaixa(245, 156, 300, 300, cor4, false);
     botaoCriar2.parametros = [campoCriar1.valor,interruptorCriar1.valor == "Sim",campoCriar2.valor,campoCriar3.valor];
     ctx.fillStyle = "black";
-    ctx.fillText("Jogadores(2-4):",280,280);
+    ctx.fillText("Jogadores(2-4):",280,310);
     for (var i = 0; i < elementosCriar.length; i++) {
         elementosCriar[i].Atualizar();
     }
