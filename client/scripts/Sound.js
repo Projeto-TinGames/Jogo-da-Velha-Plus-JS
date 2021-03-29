@@ -16,7 +16,7 @@ function Sound(src,loop,volume) {
     }
 }
 
-var ost = new Sound("../client/snd/jogo_da_velha_ost.wav",true,0);
+var ost = new Sound("../client/snd/jogo_da_velha_ost.wav",true,0.3);
 
 AtualizaSom = (ativar) => {
     ControlaMusica(ost,ativar);

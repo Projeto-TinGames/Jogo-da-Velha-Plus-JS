@@ -61,6 +61,9 @@ function Casa(x,y,width,height) {
     }
 
     this.ExecutaPoderes = (jogador,sala) => {
+        if (sala.evento == undefined) {
+            sala.evento = {nome:"AcionaPoderes",poderes:this.poderes.slice(0,this.poderes.length)};
+        }
         while (this.poderes.length > 0) {
             this.poderes.shift().Executa(this,jogador,sala);
         }

@@ -3,7 +3,6 @@ function Poder() {
 
     this.Executa = (obj,jogador,sala) => {
         if (sala.poderesAtivados.length == 3) {
-
             sala.poderesAtivados.shift();
         }
         sala.poderesAtivados.unshift(obj);
@@ -18,7 +17,6 @@ function Repeticao() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador,sala) => {
         super_executa(this,jogador,sala);
-        sala.poderesAtivados.push([this.constructor.name,casa]);
         sala.cancelarPassarTurno++;
     }
 }
@@ -31,22 +29,21 @@ function Troca() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador,sala) => {
         super_executa(this,casa,sala);
-        sala.poderesAtivados.push([this.constructor.name,casa]);
         jogadores = [];
         jogadoresMudar = [];
         jogadoresMudarPara = [];
 
-        for (var i in sala.Jogador.list) {
-            jogadores.push(sala.Jogador.list[i]);
-            jogadoresMudar.push(sala.Jogador.list[i]);
-            jogadoresMudarPara.push(sala.Jogador.list[i]);
+        for (var i in sala.jogadores) {
+            jogadores.push(sala.jogadores[i]);
+            jogadoresMudar.push(sala.jogadores[i]);
+            jogadoresMudarPara.push(sala.jogadores[i]);
         }
 
 
         for (var i = 0; i < jogadoresMudar.length; i++) {
             while (jogadoresMudar[i] == jogadoresMudarPara[i]) {
                 
-                esMudarPara[i] = jogadores[Math.floor(Math.random() * jogadores.length)];
+                jogadoresMudarPara[i] = jogadores[Math.floor(Math.random() * jogadores.length)];
             }
             jogadores.splice(jogadores.indexOf(jogadoresMudarPara[i]),1);
         }
@@ -56,9 +53,9 @@ function Troca() {
         for (var l = 0; l < sala.tabuleiro.linhas; l++) {
             for (var c = 0; c < sala.tabuleiro.colunas; c++) {
                 if (sala.tabuleiro.casas[l][c].valor != undefined) {
-                    for (i in sala.Jogador.list) {
-                        if (sala.tabuleiro.casas[l][c].valor == sala.Jogador.list[i].valor) {
-                            indexMudar = sala.Jogador.list[i].index;
+                    for (i in sala.jogadores) {
+                        if (sala.tabuleiro.casas[l][c].valor == sala.jogadores[i].valor) {
+                            indexMudar = sala.jogadores[i].index;
                         }
                     }
                     sala.cancelarPassarTurno = 1;
@@ -69,8 +66,8 @@ function Troca() {
 
         sala.cancelarTesteVitoria = false;
 
-        for (var i in sala.Jogador.list) {
-            sala.TesteVitoria(sala.Jogador.list[i]);
+        for (var i in sala.jogadores) {
+            sala.TesteVitoria(sala.jogadores[i]);
         }
     }
 }
@@ -83,7 +80,6 @@ function Remocao() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador,sala) => {
         super_executa(this,casa,sala);
-        sala.poderesAtivados.push([this.constructor.name,casa]);
 
         var posicoesCasasComValor = []
 
@@ -112,7 +108,6 @@ function Pular_Vez() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador,sala) => {
         super_executa(this,casa,sala);
-        sala.poderesAtivados.push([this.constructor.name,casa]);
         sala.turno++;
         if (sala.turno > sala.maximoJogadores-1) {
             sala.turno = 0;
@@ -128,7 +123,6 @@ function Inverter_Ordem() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador,sala) => {
         super_executa(this,casa,sala);
-        sala.poderesAtivados.push([this.constructor.name,casa]);
         if (sala.jogadoresInvertidos) {
             var indexInicial = 0;
             var somaIndex = 1;
@@ -139,11 +133,11 @@ function Inverter_Ordem() {
         }
         sala.jogadoresInvertidos = !sala.jogadoresInvertidos;
         var soma = 0;
-        for (i in sala.Jogador.list) {
-            sala.Jogador.list[i].index = indexInicial + soma;
+        for (i in sala.jogadores) {
+            sala.jogadores[i].index = indexInicial + soma;
             soma += somaIndex;
         }
-        sala.turno = sala.Jogador.list[jogador.id].index;
+        sala.turno = sala.jogadores[jogador.id].index;
     }
 }
 
@@ -155,7 +149,6 @@ function Voltar_Turno() {
     super_executa = this.Executa;
     this.Executa = (casa,jogador,sala) => {
         super_executa(this,casa,sala);
-        sala.poderesAtivados.push([this.constructor.name,casa]);
         sala.cancelarPassarTurno++;
         sala.turno--;
         if (sala.turno < 0) {

@@ -1,80 +1,142 @@
 const Jogador = require("./jogadores.js");
 const Tabuleiro = require("./tabuleiro.js");
 
-function Sala(index,privado,senha,maximoJogadores) {
+function Sala(index,privado,senha,maximoJogadores,criadoJogador) {
+    this.index = index;
     this.privado = privado;
     this.senha = senha;
     this.maximoJogadores = maximoJogadores;
-    this.index = index;
+    this.criadoJogador = criadoJogador;
+
+    this.jogadores = {};
+    this.jogadoresLength = 0;
+    this.jogadoresInativos = [];
+
+    this.evento = undefined;
+    this.deleta = false;
 
     this.IniciarSala = () => {
         this.jogando = false;
-        this.jogadores = {};
         this.tabuleiro = new Tabuleiro(this.maximoJogadores);
         this.turno = 0;
         this.etapa = "Posicionar Poderes";
         this.poderesAtivados = [];
         this.cancelarTesteVitoria = false;
         this.jogadoresInvertidos = false;
-        this.poderesAtivados =  [];
         this.cancelarPassarTurno = 0;
-        this.vitoria = false;
+        this.partidaFinalizada = false;
+        this.jogadoresConectados = 0;
+
+        this.IniciarContadoresConexao();
+    }
+
+    this.IniciarContadoresConexao = () => {
+        for (var i in this.jogadores) {
+            this.jogadores[i].contadorExpiracao = 0;
+        }
+        this.contadorExpiracao = 0;
     }
 
     this.IniciarSala();
 
-    this.ConectarJogador = (socket) => {
-        var contador = 0;
-        for (i in this.jogadores) {
-            contador++;
-        }
-        casasValidas = (4 + this.maximoJogadores - 2)*(4 + this.maximoJogadores - 2);
-        jogador = new Jogador(socket.id,contador,casasValidas,poderes);
-        this.jogadores[jogador.id] = jogador;
+    this.Atualizar = () => {
+        this.Reiniciar();
+        this.ExpirarConexoes();
+    }
 
-        if (contador+1 == this.maximoJogadores) {
-            this.jogando = true;
+    this.Reiniciar = () => {
+        if (this.partidaFinalizada) {
+            this.IniciarSala();
+            for (var i in this.jogadores) {
+                //this.ManterJogador(this.jogadores[i].id)
+                this.jogadores[i].continuarSala = false;
+            }
         }
+    }
+
+    this.ExpirarConexoes = () => {
+        if (!this.jogando) {
+            for (var i in this.jogadores) {
+                if (this.jogadores[i].ExpirarConexao()) {
+                    this.jogadoresInativos.push(this.jogadores[i]);
+                }
+            }
+            if (this.criadoJogador) {
+                this.contadorExpiracao++
+                if (this.contadorExpiracao >= 60) {
+                    this.DeletarSala();
+                }
+            }
+        }
+    }
+
+    this.ConectarJogador = (nome,socket) => {
+        casasValidas = (4 + this.maximoJogadores - 2)*(4 + this.maximoJogadores - 2);
+        jogador = new Jogador(nome,socket.id,this.jogadoresConectados,casasValidas,poderes);
+        this.jogadores[jogador.id] = jogador;
+        this.jogadoresLength++;
+        this.jogadoresConectados++;
+
+        this.ComecarJogo();
 
         socket.emit("DefinirSala",this)
     }
 
-    this.AtualizaJogo = (x,y,socket) => {
-        jogador = this.jogadores[socket.id];
-        casaSelecionada = this.tabuleiro.TestaColisoes(x,y);
-        if (casaSelecionada != undefined && jogador.index == this.turno) {
-            if (this.etapa == "Posicionar Poderes") {
-                this.AtualizaPosicionaPoder(casaSelecionada,jogador,socket);
+    this.ManterJogador = (id) => {
+        this.jogadores[id].continuarSala = true;
+        this.jogadoresConectados++;
+        this.ComecarJogo();
+    }
+
+    this.ComecarJogo = () => {
+        if (this.jogadoresConectados == this.maximoJogadores) {
+            for (var i in this.jogadores) {
+                this.jogadores[i].DefinePoderes();
             }
-            else {
-                if (!jogador.casasInvalidas.includes(casaSelecionada)) {
-                    this.AtualizaJogoDaVelha(casaSelecionada,jogador,socket);
+            this.jogando = true;
+            this.IniciarContadoresConexao();
+            this.evento = {nome:"PosicionarPoderes"};
+        }
+    }
+
+    this.AtualizaJogo = (x,y,socket) => {
+        if (this.jogando) {
+            jogador = this.jogadores[socket.id];
+            casaSelecionada = this.tabuleiro.TestaColisoes(x,y);
+            if (casaSelecionada != undefined && jogador.index == this.turno) {
+                if (this.etapa == "Posicionar Poderes") {
+                    this.AtualizaPosicionaPoder(casaSelecionada,jogador,socket);
+                }
+                else {
+                    if (!jogador.casasInvalidas.includes(casaSelecionada)) {
+                        this.AtualizaJogoDaVelha(casaSelecionada,jogador);
+                    }
                 }
             }
         }
     }
     
     this.AtualizaPosicionaPoder = (casa,jogador,socket) => {
-        socket.emit("PosicionaPoder", {casa:casa,poder:jogador.poderes[0].img})
-        jogador.PosicionaPoder(casa);
+        jogador.PosicionaPoder(casa,socket);
         
         if (jogador.poderes.length == 0) {
             this.turno++;
             if (this.turno == this.maximoJogadores) {
                 this.turno = 0;
                 this.etapa = "Jogo da Velha";
+                this.evento = {nome:"JogoDaVelha"};
             }
         }
     }
     
-    this.AtualizaJogoDaVelha = (casa,jogador,socket) => {
+    this.AtualizaJogoDaVelha = (casa,jogador) => {
         for (i in this.jogadores) {
             this.jogadores[i].ReduzirCasa(casa);
         }
         casa.valor = jogador.valor;
         casa.ExecutaPoderes(jogador,this);
         if (!this.cancelarTesteVitoria) {
-            this.TesteVitoria(casa.valor,socket)
+            this.TesteVitoria(casa.valor)
         }
     
         if (this.cancelarPassarTurno == 0) {
@@ -98,11 +160,11 @@ function Sala(index,privado,senha,maximoJogadores) {
         }
     }
     
-    this.TesteVitoria = (valor,socket) => {
-        return this.TesteHorizontal(valor,socket) || this.TesteVertical(valor,socket) || this.TesteDiagonalHorizontal(valor,socket) || this.TesteDiagonalVertical(valor,socket);
+    this.TesteVitoria = (valor) => {
+        return this.TesteHorizontal(valor) || this.TesteVertical(valor) || this.TesteDiagonalHorizontal(valor) || this.TesteDiagonalVertical(valor);
     }
     
-    this.TesteHorizontal = (valor,socket) => {
+    this.TesteHorizontal = (valor) => {
         for (l = 0; l < this.tabuleiro.linhas; l++) {
             contador = 0;
             casasVitoria = [];
@@ -116,14 +178,14 @@ function Sala(index,privado,senha,maximoJogadores) {
                     casasVitoria = [];
                 }
                 if (contador == 3) {
-                    this.FinalizarPartida(socket,casasVitoria);
+                    this.FinalizarPartida(casasVitoria);
                     return true;
                 }
             }
         }
     }
     
-    this.TesteVertical = (valor,socket) => {
+    this.TesteVertical = (valor) => {
         for (c = 0; c < this.tabuleiro.linhas; c++) {
             contador = 0;
             casasVitoria = [];
@@ -137,14 +199,14 @@ function Sala(index,privado,senha,maximoJogadores) {
                     casasVitoria = [];
                 }
                 if (contador == 3) {
-                    this.FinalizarPartida(socket,casasVitoria);
+                    this.FinalizarPartida(casasVitoria);
                     return true; 
                 }
             }
         }
     }
     
-    this.TesteDiagonalHorizontal = (valor,socket) => {
+    this.TesteDiagonalHorizontal = (valor) => {
         for (c = 0; c < this.tabuleiro.colunas - 2; c++) {
             contador = 0
             casasVitoria = []
@@ -159,7 +221,7 @@ function Sala(index,privado,senha,maximoJogadores) {
                         casasVitoria = [];
                     }
                     if (contador == 3) {
-                        this.FinalizarPartida(socket,casasVitoria);
+                        this.FinalizarPartida(casasVitoria);
                         return true;
                     }
                 }
@@ -180,7 +242,7 @@ function Sala(index,privado,senha,maximoJogadores) {
                         casasVitoria = [];
                     }
                     if (contador == 3) {
-                        this.FinalizarPartida(socket,casasVitoria);
+                        this.FinalizarPartida(casasVitoria);
                         return true;
                     }
                 }
@@ -188,7 +250,7 @@ function Sala(index,privado,senha,maximoJogadores) {
         }
     }
     
-    this.TesteDiagonalVertical = (valor,socket) => {
+    this.TesteDiagonalVertical = (valor) => {
         for (l = 0; l < this.tabuleiro.linhas - 2; l++) {
             contador = 0;
             casasVitoria = [];
@@ -203,7 +265,7 @@ function Sala(index,privado,senha,maximoJogadores) {
                         casasVitoria = [];
                     }
                     if (contador == 3) {
-                        this.FinalizarPartida(socket,casasVitoria);
+                        this.FinalizarPartida(casasVitoria);
                         return true;
                     }
                 }
@@ -224,7 +286,7 @@ function Sala(index,privado,senha,maximoJogadores) {
                         casasVitoria = [];
                     }
                     if (contador == 3) {
-                        this.FinalizarPartida(socket,casasVitoria);
+                        this.FinalizarPartida(casasVitoria);
                         return true;
                     }
                 }
@@ -232,15 +294,14 @@ function Sala(index,privado,senha,maximoJogadores) {
         }
     }
 
-    this.FinalizarPartida = (socket,casasVitoria) => {
+    this.FinalizarPartida = (casasVitoria) => {
         if (casasVitoria.length > 0) {
             this.LinhaVitoria(casasVitoria);
         }
         else {
             console.log("Empate");
         }
-        socket.emit("FinalizarPartida", this);
-        this.IniciarSala();
+        this.partidaFinalizada = true;
     }
     
     this.LinhaVitoria = (casasVitoria) => {
@@ -255,15 +316,40 @@ function Sala(index,privado,senha,maximoJogadores) {
         this.tabuleiro.casasVitoria = {primeiraCasa:posicaoPrimeiraCasa, ultimaCasa:posicaoUltimaCasa};
     }
 
-    this.DesconectarJogador = (jogador) => {
-        delete this.jogadores[jogador.id];
-        this.IniciarSala();
+    this.DesconectarJogador = (id) => {
+        if (this.jogadores[id] != undefined) {
+            this.jogadoresLength--;
+            delete this.jogadores[id];
+            if (this.jogando) {
+                this.partidaFinalizada = true;
+            }
+            else if (this.jogadoresConectados > 0) {
+                this.jogadoresConectados--;
+            }
+            var contador = 0;
+            for (i in this.jogadores) {
+                this.jogadores[i].Redefine(contador);
+                contador++;
+            }
+        }
+    }
+
+    this.DeletarSala = () => {
+        for (i in this.jogadores.length) {
+            this.jogadoresInativos.push(this.jogadores[i]);
+        }
+        this.deleta = true;
     }
 }
 
 salas = [];
 for (var i = 0; i < 18; i++) {
-    var sala = new Sala(i,false,"",1);
+    if (i == 0) {
+        var sala = new Sala(i,false,"",2,false);
+    }
+    else {
+        var sala = new Sala(i,false,"",Math.ceil(i/3+1),false);
+    }
     salas[i] = sala;
 }
 

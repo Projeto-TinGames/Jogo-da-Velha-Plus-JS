@@ -1,24 +1,33 @@
+var cor1 = {principal:"#c584fd",secundario:"#d5a3ff"};
+var cor2 = {principal:"#f990aa",secundario:"#fca7bc"};
+var cor3 = {principal:"#fda385",secundario:"#ffbca6"};
+var cor4 = {principal:"#fdca7c",secundario:"#ffe0b0"};
+var cor5 = {principal:"#fff487",secundario:"#fff7a6"};
+
 var inputSelecionado = undefined;
 
 var clientMouse = {
     x:0,
     y:0,
-    clicked:false,
+    clicou:false,
 }
 
-function CampoInput(x,y,largura,maximoChars,placeholder,tipo) {
+function CampoInput(x,y,cor,maximoChars,placeholder,tipo,valoresAceitos) {
     this.x = x;
     this.y = y;
 
-    this.largura = largura;
-    this.altura = 30;
+    this.placeholder = placeholder;
 
-    this.placeholder = placeholder
+    this.largura = 14.6*this.placeholder.length+(this.placeholder.length == 0)*22;
+    this.altura = 30;
 
     this.valor = '';
     this.valorMostrado = '';
+    this.valoresAceitos = valoresAceitos;
     this.tipo = tipo;
+    this.bloqueado = false;
 
+    this.cor = cor;
     this.maximoChars = maximoChars;
     this.maximoCharsShow = Math.round(this.largura/14);
     this.selecionado = false;
@@ -38,7 +47,7 @@ function CampoInput(x,y,largura,maximoChars,placeholder,tipo) {
     }
 
     this.Clicar = function() {
-        if (clientMouse.clicou == true) {
+        if (clientMouse.clicou == true && !this.bloqueado) {
             if (clientMouse.x > this.x && clientMouse.x < this.x + this.largura &&
                 clientMouse.y > this.y && clientMouse.y < this.y + this.altura) {
                 clientMouse.clicou = false;
@@ -51,7 +60,7 @@ function CampoInput(x,y,largura,maximoChars,placeholder,tipo) {
     };
 
     this.Desenhar = function() {
-        DesenharCaixa(this.x,this.y,this.largura,this.altura,cor4,this.selecionado);
+        DesenharCaixa(this.x,this.y,this.largura,this.altura,this.cor,this.selecionado);
         this.DesenharIndicadorEscrever();
         this.DesenharValor();
     };
@@ -94,6 +103,9 @@ function CampoInput(x,y,largura,maximoChars,placeholder,tipo) {
         }
         else {
             if (this.valor.length+1 <= this.maximoChars) {
+                if (this.valoresAceitos != undefined && !this.valoresAceitos.includes(char)) {
+                    return;
+                }
                 this.valor += char;
                 if (isNaN(char) == true && this.tipo == 'number') {
                     this.valor = this.valor.slice(0,-1);
@@ -125,25 +137,26 @@ function InterruptorValores(x,y,valores) {
 
     this.AtualizarValor = function() {
         this.vIndex++;
-        if (this.vIndex == this.valors.length) {
+        if (this.vIndex == this.valores.length) {
             this.vIndex = 0;
         }
-        this.valor = this.valors[this.vIndex];
+        this.valor = this.valores[this.vIndex];
     }
 }
 
-function Botao(x,y,largura,texto,func,parametros) {
+function Botao(x,y,cor,texto,func,parametros) {
     this.x = x;
     this.y = y;
 
     this.texto = texto;
-    this.largura = largura;
+    this.largura = 14.6*this.texto.length;
     this.altura = 30;
 
     this.selecionado = false;
     this.function = func;
     this.valor = parametros[0];
     this.parametros = parametros;
+    this.cor = cor;
 
     this.Atualizar = function() {
         this.Clicar();
@@ -163,7 +176,7 @@ function Botao(x,y,largura,texto,func,parametros) {
     };
 
     this.Desenhar = function() {
-        DesenharCaixa(this.x,this.y,this.largura,this.altura,cor4,this.selecionado);
+        DesenharCaixa(this.x,this.y,this.largura,this.altura,this.cor,this.selecionado);
         if (this.texto != '') {
             this.DesenharTexto();
         }

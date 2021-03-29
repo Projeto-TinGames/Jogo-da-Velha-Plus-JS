@@ -1,20 +1,39 @@
 const poderes = require("./poderes.js");
 
-function Jogador(id,index,casasValidas,poderes) {
+function Jogador(nome,id,index,casasValidas,poderes) {
+    this.nome = nome;
     this.id = id;
-    this.index = index;
-    var valores = ["X","O","Δ","[]"];
-    this.valor = valores[index];
-    this.img = "../client/img/Jogadores/" + this.valor + ".png";
-    this.poderes = [];
+    this.valores = ["X","O","Δ","[]"];
     this.casasInvalidas = [];
     this.casasValidas = casasValidas;
+    this.continuarSala = true;
+    this.contadorExpiracao = 0;
 
-    for (i = 0; i < 3; i++) {
-        this.poderes.push(poderes[Math.floor(Math.random() * poderes.length)]);
+    this.Redefine = (index) => {
+        this.index = index;
+        this.valor = this.valores[index];
+        this.img = "../client/img/Jogadores/" + this.valor + ".png";
+
+        this.poderes = [];
     }
 
-    this.PosicionaPoder = (casa) => {
+    this.DefinePoderes = () => {
+        for (i = 0; i < 3; i++) {
+            random = Math.floor(Math.random() * poderes.length);
+            this.poderes.push(poderes[random]);
+        }
+    }
+
+    this.ExpirarConexao = () => {
+        if (!this.continuarSala) {
+            this.contadorExpiracao++;
+        }
+        return this.contadorExpiracao >= 600;
+    }
+
+    this.PosicionaPoder = (casa,socket) => {
+        this.poderes[0].id = Math.random().toFixed(16);
+        socket.emit("PosicionaPoder", {casa:casa,poder:jogador.poderes[0]})
         casa.ColocaPoder(this.poderes.shift());
         this.casasInvalidas.push(casa);
         this.casasValidas--;
@@ -25,6 +44,8 @@ function Jogador(id,index,casasValidas,poderes) {
             this.casasValidas--;
         }
     }
+
+    this.Redefine(index);
 }
 
 Jogador.onDisconnect = (socket) => {
