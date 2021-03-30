@@ -349,7 +349,7 @@ for (var i = 0; i < 18; i++) {
         var sala = new Sala(i,false,"",2,false);
     }
     else {
-        var sala = new Sala(i,false,"",Math.ceil(i/this.linhaGanhar+1),false);
+        var sala = new Sala(i,false,"",Math.ceil(i/3+1),false);
     }
     salas[i] = sala;
 }
